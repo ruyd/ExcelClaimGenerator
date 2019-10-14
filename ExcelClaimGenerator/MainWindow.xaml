@@ -1,0 +1,217 @@
+﻿<Window x:Class="ExcelClaimGenerator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExcelClaimGenerator"
+        mc:Ignorable="d"
+        Title="Excel to 837.edi Generator" Height="450" Width="800" DataContext="{DynamicResource ViewModel}">
+    <Grid MouseLeftButtonDown="RootGrid_OnMouseLeftButtonDown">
+        <Grid>
+            <Grid Grid.Row="1" Visibility="{Binding ShowExcel, Converter={local:BoolToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Excel to 837.edi Generator" TextAlignment="Center" FontSize="26" FontWeight="Light"
+                       Margin="0 0 0 0" VerticalAlignment="Center" />
+
+                <StackPanel Grid.Row="1" Margin="0 0 0 5">
+                    <Grid Margin="0 -50 0 0" VerticalAlignment="Bottom" TextElement.FontSize="20" MinWidth="240">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="72" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                    <Grid TextElement.FontSize="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width=".3*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" BorderBrush="Gold" BorderThickness="1 0 0 1">
+                            <TextBox Background="LightGoldenrodYellow"
+                                      Foreground="LightSeaGreen"
+                                      IsReadOnly="True"  
+                                      Text="{Binding SelectedFile}" />
+                        </Border>
+                        <Border Grid.Column="1" BorderBrush="Gold" BorderThickness="1 0 0 1">
+                            <PasswordBox Background="LightSalmon" 
+                                      Foreground="OrangeRed" 
+                                     PasswordChanged="PasswordBox_PasswordChanged"                                                         
+                                     x:Name="txtPassword"    
+                                       />
+                        </Border>
+                        <Button Content=" Select Excel File " Command="{Binding ButtonCommand}" CommandParameter="file" Grid.Column="2">
+                            <Button.IsEnabled>
+                                <MultiBinding Converter="{local:MultipleBooleanTesterConverter}" ConverterParameter="false">
+                                    <Binding Path="IsLoading"  />
+                                </MultiBinding>
+                            </Button.IsEnabled>
+                        </Button>
+                        <Button Content=" Reset " Command="{Binding ButtonCommand}" CommandParameter="reset" Grid.Column="3">
+                            <Button.IsEnabled>
+                                <MultiBinding Converter="{local:MultipleBooleanTesterConverter}" ConverterParameter="false">
+                                    <Binding Path="IsLoading"  />
+                                </MultiBinding>
+                            </Button.IsEnabled>
+                        </Button>
+                    </Grid>
+
+                </StackPanel>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center" 
+                        Margin="0 0 50 0" TextElement.FontWeight="Light"
+                        TextElement.FontSize="20"/>
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <DataGrid x:Name="gridItems" ItemsSource="{Binding ExcelList}" Grid.ColumnSpan="1" FontSize="15"
+                              AutoGenerateColumns="False" MinColumnWidth="80">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding ClaimNumber}" Header="Claim#" />
+                            <DataGridTextColumn Binding="{Binding ServiceFrom}" Header="Service From" />
+                            <DataGridTextColumn Binding="{Binding ServiceTo}" Header="To" />
+                            <DataGridTextColumn Binding="{Binding ContractNumber}" Header="Contract#" />
+                            <DataGridTextColumn Binding="{Binding PatientLastName}" Header="LastName" />
+                            <DataGridTextColumn Binding="{Binding PatientFirstName}" Header="First" />
+                            <DataGridTextColumn Binding="{Binding MemberBirthDate}" Header="DOB" />
+                            <DataGridTextColumn Binding="{Binding PlaceOfService}" Header="PoS" />
+                            <DataGridTextColumn Binding="{Binding Dx1}" Header="Dx1" />
+                            <DataGridTextColumn Binding="{Binding Dx2}" Header="Dx2" />
+                            <DataGridTextColumn Binding="{Binding Dx3}" Header="Dx3" />
+                            <DataGridTextColumn Binding="{Binding Dx4}" Header="Dx4" />
+                            <DataGridTextColumn Binding="{Binding Dx5}" Header="Dx5" />
+                            <DataGridTextColumn Binding="{Binding Dx6}" Header="Dx6" />
+                            <DataGridTextColumn Binding="{Binding Dx7}" Header="Dx7" />
+                            <DataGridTextColumn Binding="{Binding CPT}" Header="CPT" />
+                            <DataGridTextColumn Binding="{Binding RenderProvider}" Header="Provider" />
+                            <DataGridTextColumn Binding="{Binding RenderNPI}" Header="NPI" />
+                            <DataGridTextColumn Binding="{Binding Tariff}" Header="Rate" />
+                            <DataGridTextColumn Binding="{Binding Message}" Header="Status" MinWidth="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+          
+
+                    <Grid Visibility="{Binding IsLoading, Converter={local:BoolToVisibilityConverter}}"
+                      Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="White" Opacity=".7" />
+                        </Grid.Background>
+                        <TextBlock Text="{Binding LoadingMessage, TargetNullValue=Loading...}" 
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" 
+                               FontSize="25" 
+                               Foreground="DimGray"
+                               />
+                        <Button Content="Cancel" 
+                            FontSize="18" Command="{Binding ButtonCommand}" CommandParameter="cancel" 
+                            FontWeight="Light" Foreground="IndianRed" 
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center"
+                            Margin="0 80 0 0"
+                            />
+                    </Grid>
+                    <Grid Visibility="{Binding IsError, Converter={local:BoolToVisibilityConverter}}"
+                      Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="Pink" Opacity=".2" />
+                        </Grid.Background>
+                        <TextBlock Text="{Binding ErrorMessage, TargetNullValue=Error}" 
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" 
+                               FontSize="25" 
+                               Foreground="SaddleBrown"
+                    />
+                    </Grid>
+
+                    <Grid Grid.Row="1">
+                        <Border Background="LightSeaGreen" MinWidth="500">
+                            <Grid TextElement.FontSize="20" TextElement.Foreground="White"  Margin="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="1.5*" MinWidth="400" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ExcelList.Count}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Claim(s)" HorizontalAlignment="Center" FontWeight="Light" FontSize="20" Margin="0 -10 0 0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ExcelTotalTariff, StringFormat=c}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Total Tariff" HorizontalAlignment="Center" FontWeight="Light" FontSize="20" Margin="0 -10 0 0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ExcelTotalFiles}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="File(s)" HorizontalAlignment="Center" FontWeight="Light" FontSize="20" Margin="0 -10 0 0" />
+                                </StackPanel>
+
+                                <Grid Grid.Column="5" Background="DimGray">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding FolderDestination}" IsReadOnly="True" />
+                                            <Button Content=" Browse " Grid.Column="1" Command="{Binding ButtonCommand}" CommandParameter="browse" />
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Text="Claims per file:" Margin="5 0 0 0"/>
+                                            <TextBox Text="{Binding FileRecordLimit, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Width="125"
+                                                      
+                                                      />
+                                        </Grid>
+                                    </StackPanel>
+                                    <Button Content="Export" Grid.Column="1" MinWidth="120" 
+                                        Command="{Binding ButtonCommand}" CommandParameter="export.excel"
+                                        >
+                                        <Button.IsEnabled>
+                                            <MultiBinding Converter="{local:MultipleBooleanTesterConverter}" ConverterParameter="false,true,true,true">
+                                                <Binding Path="IsLoading"  />
+                                                <Binding Path="FolderDestination" Converter="{local:IsNotNullConverter}" />
+                                                <Binding Path="ExcelList.Count" Converter="{local:NumberGreaterConverter}" ConverterParameter="0" />
+                                                <Binding Path="FileRecordLimit" Converter="{local:NumberGreaterConverter}" ConverterParameter="0" />
+                                            </MultiBinding>
+                                        </Button.IsEnabled>
+                                    </Button>
+                                </Grid>
+
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
